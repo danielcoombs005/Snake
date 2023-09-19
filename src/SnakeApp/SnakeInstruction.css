@@ -1,0 +1,15 @@
+.snake_instruction {
+    background: #ffffff;
+    border: 1px solid;
+    margin-left: 25%;
+    position: fixed;
+    width: 50%;
+}
+
+.snake_instruction > h3 {
+    text-align: center;
+}
+
+.snake_instruction > p {
+    text-align: center;
+}

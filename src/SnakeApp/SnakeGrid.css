@@ -1,0 +1,10 @@
+.snake_grid_cell {
+    border: 1px solid;
+    display: flex;
+    height: 15px;
+    width: 15px;
+}
+
+.snake_grid_row {
+    display: flex;
+}
