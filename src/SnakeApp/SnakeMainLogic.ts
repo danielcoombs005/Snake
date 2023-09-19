@@ -1,4 +1,4 @@
-import { Directions, GameState, SnakeObject, SnakeVals } from './SnakeValues';
+import { Directions, GameState, GameStateArrays, SnakeObject, SnakeVals } from './SnakeValues';
 
 export function initializeGridValues (height:number, width:number){
     const initArr:number[] = new Array(height*width).fill(SnakeVals.NotVisible);
@@ -18,7 +18,11 @@ export function updateGridValues_Start(snakeObj:SnakeObject, height:number, widt
 }
 
 export function updateGridValues(snakeObj:SnakeObject, height:number, width:number, direction:number): SnakeObject  {
-    const fruitLocation:number = snakeObj.gameStateVisual.findIndex(x => x === SnakeVals.FruitVisible) || -1;
+    let fruitLocation:number = snakeObj.gameStateVisual.findIndex(x => x === SnakeVals.FruitVisible) || -1;
+    //fixes issue where fruit disappears when index is 0 (recognizes location on console with same logic then is not able to locate it in the actual command)
+    if (snakeObj.gameStateVisual[0] === SnakeVals.FruitVisible) {
+        fruitLocation = 0;
+    }
     if (snakeObj.snakePath !== null && snakeObj.snakePath !== undefined) {
         const nextSnakeCell:number = getNextSnakeLocation(snakeObj.snakePath[0], width, direction);
         //snake will not encounter any object
@@ -38,11 +42,11 @@ export function updateGridValues(snakeObj:SnakeObject, height:number, width:numb
             if (newFruitLocation !== GameState.Win) {
                 snakeObj.gameStateVisual[newFruitLocation] = SnakeVals.FruitVisible;
             } else {
-                //PUT IN WIN LOGIC
+                snakeObj.snakePath = GameStateArrays.Win;
             }
         //snake will encounter wall
         } else {
-            //PUT IN LOSE LOGIC
+            snakeObj.snakePath = [-1];
         }
     }
     return snakeObj;
@@ -68,6 +72,11 @@ function updateFruitLocation(snakeObj:SnakeObject, height:number, width:number):
     if (snakeObj.snakePath.length === height*width) {
         return GameState.Win;
     }
-    const tempValsAvail:number[] = snakeObj.gameStateVisual.filter(x => x === SnakeVals.NotVisible);
-    return Math.floor(Math.random()*tempValsAvail.length);
+    let tempValsAvail:number[] = [];
+    for (let i = 0; i < snakeObj.gameStateVisual.length; i++) {
+        if (snakeObj.gameStateVisual[i] === SnakeVals.NotVisible) {
+            tempValsAvail.push(i);
+        }
+    }   
+    return tempValsAvail[Math.floor(Math.random()*tempValsAvail.length)];
 }

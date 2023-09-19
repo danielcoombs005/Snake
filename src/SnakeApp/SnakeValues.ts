@@ -13,6 +13,11 @@ export const GameState = {
     NotActive: 3
 }
 
+export const GameStateArrays = {
+    Win: [],
+    Lose: [-1]
+}
+
 export const KeyCodes = {
     A: 65,
     D: 68,

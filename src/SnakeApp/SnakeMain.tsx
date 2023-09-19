@@ -1,7 +1,7 @@
 import React from 'react';
 import SnakeGrid from './SnakeGrid';
 import SnakeInstruction from './SnakeInstruction';
-import { Directions, KeyCodes, SnakeObject, SnakeUpdateObject, SnakeVals } from './SnakeValues';
+import { Directions, GameState, GameStateArrays, KeyCodes, SnakeObject, SnakeUpdateObject, SnakeVals } from './SnakeValues';
 import * as Logic from './SnakeMainLogic';
 
 class SnakeMain extends React.Component<any,any> {
@@ -15,6 +15,7 @@ class SnakeMain extends React.Component<any,any> {
             //objects
             snakeObject: new SnakeObject([],[]),
             //numbers
+            gameState: GameState.NotActive,
             height: 10,
             width: 10,
             previousDirection: -1
@@ -56,6 +57,11 @@ class SnakeMain extends React.Component<any,any> {
         }
     }
 
+    handleWin = () => {
+        alert('You win! Click the button to start a new game!');
+        this.updateGameState(this.updateGame(Directions.Start));
+    }
+
     updateGame = (action:number):SnakeUpdateObject => {
         let tempSnakeObj:SnakeObject = {...this.state.snakeObject};
 
@@ -85,10 +91,26 @@ class SnakeMain extends React.Component<any,any> {
     }
 
     updateGameState = (snakeUpdateObject:SnakeUpdateObject) => {
-        this.setState({ 
-            previousDirection: snakeUpdateObject.previousDirection,
-            snakeObject: snakeUpdateObject.snakeObject 
-        });
+        // user wins
+        if (snakeUpdateObject.snakeObject.snakePath === GameStateArrays.Win) {
+            this.setState({
+                gameState: GameState.Win,
+                isGameActive: false,
+                snakeObject: snakeUpdateObject.snakeObject
+            }, () => this.handleWin());
+        //game is still in progress
+        } else {
+            if (!this.state.isgameActive) {
+                this.setState({
+                    gameState: GameState.InProgress,
+                    isGameActive: true
+                });
+            }
+            this.setState({
+                previousDirection: snakeUpdateObject.previousDirection,
+                snakeObject: snakeUpdateObject.snakeObject
+            });
+        }
     }
     //#endregion
 
