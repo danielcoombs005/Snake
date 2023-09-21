@@ -25,8 +25,11 @@ export function updateGridValues(snakeObj:SnakeObject, height:number, width:numb
     }
     if (snakeObj.snakePath !== null && snakeObj.snakePath !== undefined) {
         const nextSnakeCell:number = getNextSnakeLocation(snakeObj.snakePath[0], width, direction);
-        //snake will not encounter any object
-        if (nextSnakeCell !== fruitLocation && nextSnakeCell >= 0) {
+        //snake will encounter wall or itself
+        if (willCollisionOccur(snakeObj, height, width, direction)) {
+            snakeObj.snakePath = GameStateArrays.Lose;
+        //snake will not encounter wall or itself
+        } else if (nextSnakeCell !== fruitLocation && nextSnakeCell >= 0) {
             snakeObj.gameStateVisual = initializeGridValues(height, width);
             snakeObj.snakePath = [nextSnakeCell].concat(snakeObj.snakePath.slice(0,snakeObj.snakePath.length-1));
             for(let i = 0; i < snakeObj.snakePath.length; i++) {
@@ -44,12 +47,27 @@ export function updateGridValues(snakeObj:SnakeObject, height:number, width:numb
             } else {
                 snakeObj.snakePath = GameStateArrays.Win;
             }
-        //snake will encounter wall
         } else {
-            snakeObj.snakePath = [-1];
+            snakeObj.snakePath = GameStateArrays.Lose;
         }
     }
     return snakeObj;
+}
+
+export function isDirectionOpposite (previousDirection:number, currentDirection:number):boolean {
+    if ((previousDirection === Directions.Left && currentDirection === Directions.Right) ||
+         (previousDirection === Directions.Up && currentDirection === Directions.Down) ||
+         (previousDirection === Directions.Right && currentDirection === Directions.Left) ||
+         (previousDirection === Directions.Down && currentDirection === Directions.Up)) {
+            return true;
+    }
+    return false;
+}
+
+export async function Delay(amount:number): Promise<{}> {
+    return new Promise((res:any) => {
+        setTimeout(res, amount);
+    });
 }
 
 function getNextSnakeLocation(snakePathStart:number, width:number, direction:number): number {
@@ -79,4 +97,18 @@ function updateFruitLocation(snakeObj:SnakeObject, height:number, width:number):
         }
     }   
     return tempValsAvail[Math.floor(Math.random()*tempValsAvail.length)];
+}
+
+function willCollisionOccur(snakeObj:SnakeObject, height:number, width:number, currentDirection:number):boolean {
+    let nextSpace:number = currentDirection === Directions.Left ? snakeObj.snakePath[0] - 1 :
+                             currentDirection === Directions.Right ? snakeObj.snakePath[0] + 1 : 
+                             (currentDirection === Directions.Up && snakeObj.snakePath[0] - width >= 0) ? snakeObj.snakePath[0] - width :
+                             (currentDirection === Directions.Down && snakeObj.snakePath[0] + width < height*width) ? snakeObj.snakePath[0] + width :
+                             -1;
+    if ((currentDirection === Directions.Left && nextSpace % width === width - 1) ||
+        currentDirection === Directions.Right && nextSpace % width === 0 ||
+        snakeObj.snakePath.includes(nextSpace)) {
+        nextSpace = -1;
+    }
+    return nextSpace === -1;
 }

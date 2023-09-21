@@ -15,6 +15,7 @@ class SnakeMain extends React.Component<any,any> {
             //objects
             snakeObject: new SnakeObject([],[]),
             //numbers
+            delayInMS: 500,
             gameState: GameState.NotActive,
             height: 10,
             width: 10,
@@ -30,6 +31,15 @@ class SnakeMain extends React.Component<any,any> {
     //#endregion
 
     //#region Game logic
+    playGame = () => {
+        while (this.state.gameState === GameState.InProgress) {
+            Logic.Delay(this.state.delayInMS);
+            if (this.state.previousDirection !== -1) {
+                this.handleKeyPress(this.state.previousDirection);
+            }
+        }
+    }
+
     handleKeyPress = (e:any) => {
         if (this.state.isGameActive) {
             let direction:number = -1;
@@ -53,12 +63,19 @@ class SnakeMain extends React.Component<any,any> {
                 default:
                     break;
             }
-            this.updateGameState(this.updateGame(direction));
+            if (!Logic.isDirectionOpposite(this.state.previousDirection, direction)) {
+                this.updateGameState(this.updateGame(direction));
+            }
         }
     }
 
     handleWin = () => {
         alert('You win! Click the button to start a new game!');
+        this.updateGameState(this.updateGame(Directions.Start));
+    }
+
+    handleLoss = () => {
+        alert('You lose. Click the button to start a new game.');
         this.updateGameState(this.updateGame(Directions.Start));
     }
 
@@ -82,6 +99,11 @@ class SnakeMain extends React.Component<any,any> {
             case Directions.Down:
             case Directions.Left:
             case Directions.Right:
+                if (this.state.gameState !== GameState.InProgress) {
+                    this.setState({ 
+                        gameState: GameState.InProgress
+                    }, () => this.playGame());
+                }
                 tempSnakeObj = Logic.updateGridValues(tempSnakeObj, this.state.height, this.state.width, action);
                 break;
             default:
@@ -98,6 +120,13 @@ class SnakeMain extends React.Component<any,any> {
                 isGameActive: false,
                 snakeObject: snakeUpdateObject.snakeObject
             }, () => this.handleWin());
+        // user loses
+        } else if(snakeUpdateObject.snakeObject.snakePath === GameStateArrays.Lose) {
+            this.setState({
+                gameState: GameState.Lose,
+                isGameActive: false,
+                snakeObject: snakeUpdateObject.snakeObject
+            }, () => this.handleLoss());
         //game is still in progress
         } else {
             if (!this.state.isgameActive) {
